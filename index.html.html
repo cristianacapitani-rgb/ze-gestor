@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Zé Gestor">
+<meta name="theme-color" content="#ff6b2b">
+<link rel="manifest" href="manifest.json">
+<title>Zé Gestor</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Lato:wght@300;400;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0a; --s1:#141414; --s2:#1c1c1c; --s3:#242424;
+  --border:#2a2a2a; --border2:#333;
+  --fire:#ff6b2b; --fire2:#ff9a3c;
+  --green:#22c55e; --green2:#16a34a;
+  --amber:#f59e0b; --red:#ef4444; --blue:#3b82f6;
+  --text:#f0f0f0; --text2:#888; --text3:#444;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'Lato',sans-serif; --disp:'Syne',sans-serif;
+  --nav-h:60px; --tab-h:64px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{height:100%;overscroll-behavior:none;}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--sans);
+  height:100%;display:flex;flex-direction:column;
+  max-width:480px;margin:0 auto;
+  position:relative;overflow:hidden;
+}
+
+/* ── TOP NAV ── */
+.top-nav{
+  height:var(--nav-h);flex-shrink:0;
+  background:var(--s1);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 16px;gap:12px;
+  position:relative;z-index:50;
+}
+.app-icon{
+  width:38px;height:38px;border-radius:12px;
+  background:linear-gradient(135deg,var(--fire),var(--fire2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+.app-title-wrap{flex:1;}
+.app-title{font-family:var(--disp);font-size:17px;font-weight:800;line-height:1;}
+.app-title em{color:var(--fire);font-style:normal;}
+.app-rest{font-size:11px;color:var(--text2);margin-top:1px;}
+.nav-icons{display:flex;gap:14px;align-items:center;}
+.nav-icon{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--s2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;cursor:pointer;position:relative;
+  transition:all .2s;
+}
+.nav-icon:active{transform:scale(.9);}
+.notif-badge{
+  position:absolute;top:-2px;right:-2px;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--red);font-size:9px;font-weight:700;
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--bg);
+}
+
+/* ── PAGES ── */
+.pages{flex:1;overflow:hidden;position:relative;}
+.page{
+  position:absolute;inset:0;
+  overflow-y:auto;overflow-x:hidden;
+  display:none;padding-bottom:calc(var(--tab-h) + 16px);
+}
+.page.active{display:block;}
+.page::-webkit-scrollbar{width:2px;}
+.page::-webkit-scrollbar-thumb{background:var(--border2);}
+
+/* ── BOTTOM TABS ── */
+.bottom-tabs{
+  height:var(--tab-h);flex-shrink:0;
+  background:var(--s1);border-top:1px solid var(--border);
+  display:flex;align-items:stretch;
+  position:relative;z-index:50;
+}
+.tab{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;
+  cursor:pointer;transition:all .15s;
+  position:relative;
+}
+.tab:active{background:rgba(255,107,43,0.05);}
+.tab-icon{font-size:22px;transition:transform .2s;}
+.tab-label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.3px;font-family:var(--disp);}
+.tab.active .tab-icon{transform:scale(1.15);}
+.tab.active .tab-label{color:var(--fire);}
+.tab.active::before{
+  content:'';position:absolute;top:0;left:20%;right:20%;height:2px;
+  background:var(--fire);border-radius:0 0 3px 3px;
+}
+.tab-badge{
+  position:absolute;top:8px;right:calc(50% - 18px);
+  background:var(--red);color:#fff;
+  font-size:9px;font-weight:700;
+  min-width:16px;height:16px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 3px;border:2px solid var(--s1);
+}
+
+/* ── ONBOARDING ── */
+.onboarding-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:32px 24px;
+}
+.ob-logo{font-size:56px;margin-bottom:16px;}
+.ob-title{font-family:var(--disp);font-size:28px;font-weight:800;text-align:center;margin-bottom:8px;}
+.ob-title em{color:var(--fire);font-style:normal;}
+.ob-sub{color:var(--text2);font-size:14px;text-align:center;line-height:1.6;margin-bottom:32px;max-width:320px;}
+.ob-form{width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px;}
+.ob-field label{display:block;font-size:11px;font-weight:700;color:var(--text2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;font-family:var(--mono);}
+.ob-field input,.ob-field select{
+  width:100%;background:var(--s2);border:1px solid var(--border);
+  color:var(--text);border-radius:10px;
+  padding:12px 14px;font-size:15px;font-family:var(--sans);
+  outline:none;transition:border-color .2s;
+}
+.ob-field input:focus,.ob-field select:focus{border-color:var(--fire);}
+.ob-field select option{background:var(--s2);}
+.ob-btn{
+  width:100%;padding:15px;background:linear-gradient(135deg,var(--fire),var(--fire2));
+  color:#fff;border:none;border-radius:12px;
+  font-size:16px;font-weight:700;font-family:var(--disp);
+  cursor:pointer;margin-top:4px;
+  box-shadow:0 4px 20px rgba(255,107,43,0.35);
+  transition:all .2s;
+}
+.ob-btn:active{transform:scale(.98);}
+
+/* ── INSTALL PROMPT ── */
+.install-prompt{
+  margin:12px 16px 0;
+  background:linear-gradient(135deg,rgba(255,107,43,0.1),rgba(255,154,60,0.05));
+  border:1px solid rgba(255,107,43,0.25);
+  border-radius:12px;padding:14px;
+  display:flex;align-items:center;gap:12px;
+}
+.install-prompt .install-icon{font-size:28px;}
+.install-prompt .install-text{flex:1;}
+.install-prompt .install-title{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:2px;}
+.install-prompt .install-sub{font-size:11px;color:var(--text2);}
+.install-btn{
+  background:var(--fire);color:#fff;border:none;
+  border-radius:8px;padding:7px 12px;
+  font-size:12px;font-weight:700;font-family:var(--disp);
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+}
+
+/* ── PUSH PERMISSION ── */
+.push-prompt{
+  margin:10px 16px 0;
+  background:rgba(59,130,246,0.08);
+  border:1px solid rgba(59,130,246,0.2);
+  border-radius:12px;padding:12px 14px;
+  display:flex;align-items:center;gap:10px;
+  font-size:12px;color:#93c5fd;
+}
+.push-btn{
+  margin-left:auto;background:var(--blue);color:#fff;border:none;
+  border-radius:7px;padding:6px 12px;
+  font-size:11px;font-weight:700;cursor:pointer;
+  font-family:var(--disp);white-space:nowrap;flex-shrink:0;
+}
+
+/* ── CHAT PAGE ── */
+.chat-wrap{
+  display:flex;flex-direction:column;
+  height:100%;
+}
+.chat-messages{
+  flex:1;padding:12px 10px;
+  display:flex;flex-direction:column;gap:3px;
+  overflow-y:auto;
+}
+.chat-messages::-webkit-scrollbar{width:2px;}
+.date-div{text-align:center;margin:8px 0;}
+.date-div span{
+  background:rgba(255,255,255,0.06);
+  color:var(--text2);font-size:10px;
+  padding:3px 10px;border-radius:6px;
+}
+
+/* BUBBLES */
+.msg{display:flex;flex-direction:column;max-width:82%;animation:msgPop .15s ease;}
+@keyframes msgPop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.msg.mine{align-self:flex-end;}
+.msg.theirs{align-self:flex-start;}
+.bubble{
+  padding:9px 13px 7px;border-radius:16px;
+  font-size:14px;line-height:1.55;
+  position:relative;word-break:break-word;
+}
+.msg.mine .bubble{
+  background:var(--fire);color:#fff;
+  border-bottom-right-radius:4px;
+}
+.msg.theirs .bubble{
+  background:var(--s2);color:var(--text);
+  border-bottom-left-radius:4px;
+  border:1px solid var(--border);
+}
+.bubble-time{
+  font-size:10px;color:rgba(255,255,255,0.55);
+  text-align:right;margin-top:2px;
+}
+.msg.theirs .bubble-time{color:var(--text3);}
+
+/* CARD BUBBLE */
+.b-card{
+  background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.07);
+  border-radius:10px;padding:10px;margin-top:8px;
+}
+.b-card-title{font-family:var(--disp);font-size:12px;font-weight:700;color:var(--fire);margin-bottom:7px;}
+.b-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:12px;}
+.b-row:last-child{border:none;}
+.b-row span:first-child{color:var(--text2);}
+.b-row span:last-child{font-weight:700;font-family:var(--mono);}
+.b-green{color:#6ee7b7!important;} .b-red{color:#fca5a5!important;} .b-amber{color:#fcd34d!important;}
+.action-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.ab{
+  background:rgba(255,107,43,0.12);border:1px solid rgba(255,107,43,0.25);
+  color:var(--fire);font-size:11px;font-weight:700;
+  padding:6px 12px;border-radius:14px;cursor:pointer;
+  white-space:nowrap;transition:all .15s;
+}
+.ab:active{transform:scale(.95);background:rgba(255,107,43,0.2);}
+
+/* TYPING */
+.typing-bubble{
+  align-self:flex-start;
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:16px;border-bottom-left-radius:4px;
+  padding:12px 16px;display:none;align-items:center;gap:4px;
+}
+.typing-bubble.show{display:flex;}
+.td{width:7px;height:7px;border-radius:50%;background:var(--text3);animation:td 1.2s infinite;}
+.td:nth-child(2){animation-delay:.2s;} .td:nth-child(3){animation-delay:.4s;}
+@keyframes td{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-5px)}}
+
+/* CHAT INPUT */
+.chat-input-wrap{
+  padding:8px 10px 10px;
+  background:var(--bg);
+  border-top:1px solid var(--border);
+  display:flex;gap:8px;align-items:flex-end;
+  flex-shrink:0;
+}
+.chat-input-box{
+  flex:1;background:var(--s2);border:1px solid var(--border);
+  border-radius:22px;display:flex;align-items:flex-end;
+  padding:8px 14px;gap:8px;
+  transition:border-color .2s;max-height:100px;
+}
+.chat-input-box:focus-within{border-color:var(--fire);}
+.chat-input{
+  flex:1;background:transparent;border:none;color:var(--text);
+  font-size:14px;font-family:var(--sans);resize:none;outline:none;
+  max-height:80px;overflow-y:auto;line-height:1.4;
+}
+.chat-input::placeholder{color:var(--text3);}
+.chat-send{
+  width:42px;height:42px;border-radius:50%;
+  background:var(--fire);border:none;color:#fff;
+  font-size:16px;cursor:pointer;flex-shrink:0;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;
+}
+.chat-send:active{transform:scale(.9);}
+.chat-send:disabled{background:var(--border);cursor:default;}
+
+/* CHIPS */
+.quick-chips{
+  padding:8px 10px 0;display:flex;gap:6px;
+  overflow-x:auto;flex-shrink:0;
+}
+.quick-chips::-webkit-scrollbar{display:none;}
+.chip{
+  background:var(--s2);border:1px solid var(--border);
+  color:var(--text2);font-size:11px;font-weight:700;
+  padding:6px 12px;border-radius:14px;cursor:pointer;
+  white-space:nowrap;transition:all .15s;flex-shrink:0;
+}
+.chip:active{border-color:var(--fire);color:var(--fire);}
+
+/* ── CALCULATOR PAGE ── */
+.page-wrap{padding:16px;}
+.page-header{margin-bottom:20px;}
+.page-header h2{font-family:var(--disp);font-size:22px;font-weight:800;}
+.page-header h2 em{color:var(--fire);font-style:normal;}
+.page-header p{font-size:13px;color:var(--text2);margin-top:4px;line-height:1.5;}
+
+.card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;}
+.card-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--fire);font-family:var(--mono);margin-bottom:4px;}
+.card h3{font-family:var(--disp);font-size:16px;font-weight:700;margin-bottom:14px;}
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;font-family:var(--mono);}
+.field input,.field select{
+  width:100%;background:var(--s2);border:1px solid var(--border);
+  color:var(--text);border-radius:8px;padding:10px 12px;
+  font-size:14px;font-family:var(--mono);outline:none;transition:border-color .2s;
+}
+.field input:focus,.field select:focus{border-color:var(--fire);box-shadow:0 0 0 3px rgba(255,107,43,0.1);}
+.field select{cursor:pointer;} .field select option{background:var(--s2);}
+.pfx-wrap{position:relative;}
+.pfx{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:12px;color:var(--text3);pointer-events:none;}
+.pfx-wrap input{padding-left:28px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.rng-row{display:flex;align-items:center;gap:10px;}
+input[type=range]{
+  flex:1;-webkit-appearance:none;height:3px;border-radius:2px;outline:none;cursor:pointer;
+  background:linear-gradient(to right,var(--fire) var(--rp,30%),var(--border) var(--rp,30%));
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--fire);cursor:pointer;box-shadow:0 0 6px rgba(255,107,43,0.4);
+}
+.rng-val{font-family:var(--mono);font-size:12px;color:var(--fire);min-width:38px;text-align:right;font-weight:700;}
+
+/* RESULT */
+.result-block{
+  background:linear-gradient(135deg,rgba(255,107,43,0.08),rgba(255,154,60,0.04));
+  border:1px solid rgba(255,107,43,0.2);
+  border-radius:14px;padding:18px;margin-bottom:12px;
+}
+.result-price{
+  text-align:center;margin-bottom:16px;
+}
+.result-price .label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--mono);margin-bottom:4px;}
+.result-price .value{font-family:var(--mono);font-size:44px;font-weight:600;color:var(--fire);line-height:1;}
+.result-price .per{font-size:13px;color:var(--text2);}
+.result-rows{display:flex;flex-direction:column;gap:6px;}
+.result-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.result-row:last-child{border:none;}
+.result-row span:first-child{color:var(--text2);}
+.result-row span:last-child{font-family:var(--mono);font-weight:700;}
+.tag-ok{color:var(--green);} .tag-warn{color:var(--amber);} .tag-bad{color:var(--red);}
+
+/* SCENARIO */
+.scenario{
+  display:flex;gap:8px;padding:10px;border-radius:8px;
+  background:var(--s2);border:1px solid var(--border);margin-top:8px;
+}
+.scenario-icon{font-size:18px;flex-shrink:0;}
+.scenario-text{font-size:12px;color:var(--text2);line-height:1.5;}
+.scenario-text strong{color:var(--text);font-weight:700;}
+
+.btn-calc{
+  width:100%;padding:14px;background:var(--fire);
+  color:#fff;border:none;border-radius:10px;
+  font-size:15px;font-weight:700;font-family:var(--disp);
+  cursor:pointer;transition:all .2s;margin-top:4px;
+  box-shadow:0 4px 16px rgba(255,107,43,0.25);
+}
+.btn-calc:active{transform:scale(.98);}
+
+/* ── REMINDERS PAGE ── */
+.reminder-item{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:12px;padding:14px;margin-bottom:10px;
+  display:flex;gap:12px;align-items:flex-start;
+}
+.rem-icon{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.rem-icon.fire{background:rgba(255,107,43,0.12);}
+.rem-icon.green{background:rgba(34,197,94,0.1);}
+.rem-icon.amber{background:rgba(245,158,11,0.1);}
+.rem-icon.blue{background:rgba(59,130,246,0.1);}
+.rem-content{flex:1;}
+.rem-title{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:2px;}
+.rem-sub{font-size:11px;color:var(--text2);margin-bottom:8px;line-height:1.4;}
+.rem-schedule{
+  display:flex;gap:6px;flex-wrap:wrap;
+}
+.rem-time{
+  background:var(--s2);border:1px solid var(--border);
+  font-size:11px;font-family:var(--mono);color:var(--text2);
+  padding:4px 10px;border-radius:6px;cursor:pointer;
+  transition:all .2s;
+}
+.rem-time.active{background:rgba(255,107,43,0.12);border-color:var(--fire);color:var(--fire);}
+.rem-toggle{
+  width:44px;height:24px;border-radius:12px;
+  background:var(--s3);border:none;cursor:pointer;
+  position:relative;transition:all .2s;flex-shrink:0;
+}
+.rem-toggle.on{background:var(--fire);}
+.rem-toggle::after{
+  content:'';position:absolute;top:2px;left:2px;
+  width:20px;height:20px;border-radius:50%;background:#fff;
+  transition:transform .2s;
+}
+.rem-toggle.on::after{transform:translateX(20px);}
+
+/* ── HOME PAGE ── */
+.home-greeting{
+  padding:20px 16px 0;
+}
+.home-greeting h2{font-family:var(--disp);font-size:24px;font-weight:800;margin-bottom:4px;}
+.home-greeting h2 em{color:var(--fire);font-style:normal;}
+.home-greeting p{font-size:13px;color:var(--text2);line-height:1.5;}
+
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px;}
+.metric-tile{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:12px;padding:14px;cursor:pointer;transition:all .15s;
+}
+.metric-tile:active{transform:scale(.97);}
+.metric-tile .mt-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);font-family:var(--mono);margin-bottom:6px;}
+.metric-tile .mt-val{font-family:var(--mono);font-size:22px;font-weight:600;line-height:1;}
+.metric-tile .mt-sub{font-size:11px;color:var(--text3);margin-top:3px;}
+.mt-red{color:var(--red);} .mt-green{color:var(--green);} .mt-amber{color:var(--amber);} .mt-white{color:var(--text);}
+
+.alert-strip{
+  margin:0 16px 12px;padding:12px 14px;
+  border-radius:10px;display:flex;align-items:flex-start;gap:10px;
+  font-size:13px;line-height:1.5;cursor:pointer;
+}
+.alert-strip.red{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#fca5a5;}
+.alert-strip.amber{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#fcd34d;}
+.alert-strip.green{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);color:#86efac;}
+.alert-strip.blue{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);color:#93c5fd;}
+
+.section-title-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0 16px;margin-bottom:10px;
+}
+.section-title-row h3{font-family:var(--disp);font-size:14px;font-weight:700;}
+.section-title-row a{font-size:12px;color:var(--fire);cursor:pointer;}
+
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px;}
+.action-card{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:12px;padding:14px;cursor:pointer;
+  transition:all .15s;text-align:center;
+}
+.action-card:active{transform:scale(.96);}
+.action-card .ac-icon{font-size:28px;margin-bottom:8px;}
+.action-card .ac-title{font-family:var(--disp);font-size:12px;font-weight:700;}
+.action-card .ac-sub{font-size:10px;color:var(--text3);margin-top:2px;}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:calc(var(--tab-h) + 16px);left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--s2);border:1px solid var(--border2);
+  color:var(--text);padding:10px 18px;border-radius:10px;
+  font-size:13px;font-weight:700;z-index:999;
+  opacity:0;transition:all .3s;pointer-events:none;
+  white-space:nowrap;font-family:var(--disp);
+  box-shadow:0 8px 24px rgba(0,0,0,0.5);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* DIVIDER */
+.div{height:1px;background:var(--border);margin:14px 0;}
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div class="onboarding-overlay" id="onboarding">
+  <div class="ob-logo">🧑‍🍳</div>
+  <div class="ob-title">Olá! Sou o<br><em>Zé Gestor</em></div>
+  <div class="ob-sub">Seu gerente financeiro no bolso. Vamos configurar seu restaurante em 30 segundos.</div>
+  <div class="ob-form">
+    <div class="ob-field">
+      <label>Seu nome</label>
+      <input id="ob-nome" placeholder="Ex: Maria, João..." maxlength="30">
+    </div>
+    <div class="ob-field">
+      <label>Nome do restaurante</label>
+      <input id="ob-rest" placeholder="Ex: Hamburgueria da Maria..." maxlength="40">
+    </div>
+    <div class="ob-field">
+      <label>Tipo de operação</label>
+      <select id="ob-tipo">
+        <option value="hamburgueria">🍔 Hamburgueria</option>
+        <option value="pizzaria">🍕 Pizzaria</option>
+        <option value="restaurante">🍽️ Restaurante / PF</option>
+        <option value="lanchonete">🥪 Lanchonete</option>
+        <option value="bar">🍺 Bar / Petiscaria</option>
+        <option value="delivery">📦 Delivery puro</option>
+        <option value="cafeteria">☕ Cafeteria</option>
+      </select>
+    </div>
+    <div class="ob-field">
+      <label>Faturamento mensal estimado</label>
+      <select id="ob-fat">
+        <option value="5000">Até R$ 5.000</option>
+        <option value="15000" selected>R$ 5.000 – R$ 15.000</option>
+        <option value="30000">R$ 15.000 – R$ 30.000</option>
+        <option value="60000">R$ 30.000 – R$ 60.000</option>
+        <option value="100000">Acima de R$ 60.000</option>
+      </select>
+    </div>
+    <button class="ob-btn" onclick="startApp()">Entrar no Zé Gestor →</button>
+  </div>
+</div>
+
+<!-- TOP NAV -->
+<div class="top-nav">
+  <div class="app-icon">🧑‍🍳</div>
+  <div class="app-title-wrap">
+    <div class="app-title"><em>Zé</em> Gestor</div>
+    <div class="app-rest" id="nav-rest">Carregando...</div>
+  </div>
+  <div class="nav-icons">
+    <div class="nav-icon" onclick="openNotifPanel()" title="Alertas">
+      🔔
+      <div class="notif-badge" id="notif-badge" style="display:none">0</div>
+    </div>
+    <div class="nav-icon" onclick="resetApp()" title="Sair">⚙️</div>
+  </div>
+</div>
+
+<!-- PAGES -->
+<div class="pages">
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="home-greeting">
+      <h2>Boa tarde, <em id="home-name">amigo</em>! 👋</h2>
+      <p id="home-sub">Aqui está o resumo do seu negócio hoje.</p>
+    </div>
+
+    <div id="install-banner"></div>
+    <div id="push-banner"></div>
+
+    <div class="metrics-grid">
+      <div class="metric-tile" onclick="goTab('chat');sendQuick('Qual meu resultado de hoje?')">
+        <div class="mt-label">Resultado hoje</div>
+        <div class="mt-val mt-white" id="h-resultado">R$ —</div>
+        <div class="mt-sub">toque para calcular</div>
+      </div>
+      <div class="metric-tile" onclick="goTab('chat');sendQuick('Como está meu CMV este mês?')">
+        <div class="mt-label">CMV estimado</div>
+        <div class="mt-val" id="h-cmv">—%</div>
+        <div class="mt-sub">custo mercadoria</div>
+      </div>
+      <div class="metric-tile" onclick="goTab('calc')">
+        <div class="mt-label">Precificador</div>
+        <div class="mt-val mt-white" style="font-size:28px">🧮</div>
+        <div class="mt-sub">calcular preço certo</div>
+      </div>
+      <div class="metric-tile" onclick="goTab('chat');sendQuick('Tenho algum alerta importante?')">
+        <div class="mt-label">Alertas ativos</div>
+        <div class="mt-val mt-amber" id="h-alertas">0</div>
+        <div class="mt-sub">toque para ver</div>
+      </div>
+    </div>
+
+    <div id="home-alerts"></div>
+
+    <div class="section-title-row" style="margin-top:4px;">
+      <h3>Ações rápidas</h3>
+    </div>
+    <div class="action-grid">
+      <div class="action-card" onclick="goTab('chat');sendQuick('Vendi R$0 hoje — me ajuda a registrar minhas vendas')">
+        <div class="ac-icon">💰</div>
+        <div class="ac-title">Informar vendas</div>
+        <div class="ac-sub">registrar o dia</div>
+      </div>
+      <div class="action-card" onclick="goTab('chat');sendQuick('Cria um combo lucrativo para mim')">
+        <div class="ac-icon">🔥</div>
+        <div class="ac-title">Criar combo</div>
+        <div class="ac-sub">aumentar ticket</div>
+      </div>
+      <div class="action-card" onclick="goTab('chat');sendQuick('Faça um diagnóstico financeiro do meu restaurante')">
+        <div class="ac-icon">🩺</div>
+        <div class="ac-title">Diagnóstico</div>
+        <div class="ac-sub">ver situação real</div>
+      </div>
+      <div class="action-card" onclick="goTab('reminders')">
+        <div class="ac-icon">⏰</div>
+        <div class="ac-title">Lembretes</div>
+        <div class="ac-sub">push notifications</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="page" id="page-chat" style="display:flex;flex-direction:column;padding:0;">
+    <div class="quick-chips" id="quick-chips">
+      <div class="chip" onclick="sendQuick('Qual meu resultado de hoje?')">📊 Resultado</div>
+      <div class="chip" onclick="sendQuick('Cria um combo lucrativo')">🔥 Combo</div>
+      <div class="chip" onclick="sendQuick('Tenho algum alerta?')">🚨 Alertas</div>
+      <div class="chip" onclick="sendQuick('Preciso precificar um produto')">🧮 Preço</div>
+      <div class="chip" onclick="sendQuick('Como reduzir meu desperdício?')">🗑️ Desperdício</div>
+      <div class="chip" onclick="sendQuick('Estou com dívida com fornecedor, o que faço?')">😰 Dívida</div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="date-div"><span>Hoje</span></div>
+    </div>
+    <div class="typing-bubble" id="typing">
+      <div class="td"></div><div class="td"></div><div class="td"></div>
+    </div>
+    <div class="chat-input-wrap">
+      <div class="chat-input-box">
+        <textarea class="chat-input" id="chat-input" placeholder="Fala com o Zé..." rows="1"
+          onkeydown="chatKey(event)" oninput="autoGrow(this)"></textarea>
+      </div>
+      <button class="chat-send" id="chat-send" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+
+  <!-- CALCULATOR -->
+  <div class="page" id="page-calc">
+    <div class="page-wrap">
+      <div class="page-header">
+        <h2>Calculadora de <em>Preço</em></h2>
+        <p>Preço real com todos os custos incluídos — sem surpresa no final do mês.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Passo 1</div>
+        <h3>Custo do produto (CMV)</h3>
+        <div class="field">
+          <label>Custo total dos ingredientes</label>
+          <div class="pfx-wrap"><span class="pfx">R$</span>
+            <input type="number" id="c-cmv" placeholder="0,00" min="0" step="0.01" oninput="calcPreco()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Custo da embalagem</label>
+          <div class="pfx-wrap"><span class="pfx">R$</span>
+            <input type="number" id="c-emb" placeholder="0,00" min="0" step="0.01" oninput="calcPreco()">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Passo 2</div>
+        <h3>Custos variáveis</h3>
+        <div class="field">
+          <label>Canal de venda principal</label>
+          <select id="c-canal" onchange="calcPreco()">
+            <option value="salao">🪑 Salão / Balcão (sem taxa app)</option>
+            <option value="delivery_proprio">🛵 Delivery próprio</option>
+            <option value="ifood_basico">📱 iFood — Plano Básico (~27%)</option>
+            <option value="ifood_plus">📱 iFood — Parceiro Plus (~16%)</option>
+            <option value="rappi">📱 Rappi / 99Food (~20%)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Imposto sobre venda <span id="c-imp-lbl" style="color:var(--fire)">6%</span></label>
+          <div class="rng-row">
+            <input type="range" id="c-imp" min="0" max="15" value="6" oninput="rng(this,'c-imp-lbl','%');calcPreco()">
+            <span class="rng-val" id="c-imp-v">6%</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Pagamento no cartão (% das vendas) <span id="c-cart-lbl" style="color:var(--fire)">40%</span></label>
+          <div class="rng-row">
+            <input type="range" id="c-cart" min="0" max="100" value="40" oninput="rng(this,'c-cart-lbl','%');calcPreco()">
+            <span class="rng-val" id="c-cart-v">40%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Passo 3</div>
+        <h3>Custos fixos + lucro</h3>
+        <div class="field">
+          <label>Rateio de custos fixos por produto</label>
+          <div class="pfx-wrap"><span class="pfx">R$</span>
+            <input type="number" id="c-fixo" placeholder="Ex: 2,50" min="0" step="0.01" oninput="calcPreco()">
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:5px;font-family:var(--mono);">
+            Dica: total fixos mensal ÷ pedidos/mês
+          </div>
+        </div>
+        <div class="field">
+          <label>Margem de lucro desejada <span id="c-mg-lbl" style="color:var(--fire)">20%</span></label>
+          <div class="rng-row">
+            <input type="range" id="c-mg" min="5" max="60" value="20" oninput="rng(this,'c-mg-lbl','%');calcPreco()">
+            <span class="rng-val" id="c-mg-v">20%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULTADO -->
+      <div class="result-block" id="calc-result" style="display:none">
+        <div class="result-price">
+          <div class="label">Preço de venda sugerido</div>
+          <div class="value" id="res-preco">R$ 0,00</div>
+          <div class="per" id="res-arred"></div>
+        </div>
+        <div class="result-rows">
+          <div class="result-row"><span>CMV + embalagem</span><span id="res-cmv-val">R$ 0,00</span></div>
+          <div class="result-row"><span>CMV % do preço</span><span id="res-cmv-pct" class="tag-ok">0%</span></div>
+          <div class="result-row"><span>Taxa delivery/cartão</span><span id="res-taxa">R$ 0,00</span></div>
+          <div class="result-row"><span>Imposto</span><span id="res-imp">R$ 0,00</span></div>
+          <div class="result-row"><span>Custo fixo rateado</span><span id="res-fixo">R$ 0,00</span></div>
+          <div class="result-row"><span>Lucro líquido</span><span id="res-lucro" class="tag-ok">R$ 0,00</span></div>
+          <div class="result-row"><span>Margem real</span><span id="res-margem" class="tag-ok">0%</span></div>
+        </div>
+        <div id="res-cenarios"></div>
+      </div>
+
+      <button class="btn-calc" onclick="calcPreco()">Calcular preço →</button>
+      <button class="btn-calc" style="margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--text2);"
+        onclick="sendCalcToChat()">💬 Enviar para o Zé Gestor analisar</button>
+    </div>
+  </div>
+
+  <!-- REMINDERS -->
+  <div class="page" id="page-reminders">
+    <div class="page-wrap">
+      <div class="page-header">
+        <h2><em>Lembretes</em> do dia</h2>
+        <p>Push notifications que o Zé manda no horário certo para você não esquecer de nada.</p>
+      </div>
+
+      <div id="push-status-card" class="card" style="margin-bottom:16px;">
+        <div class="card-label">Status</div>
+        <h3>Notificações push</h3>
+        <div id="push-status-content"></div>
+      </div>
+
+      <div class="card-label" style="padding:0 2px 8px">Lembretes configuráveis</div>
+
+      <div class="reminder-item">
+        <div class="rem-icon fire">🌅</div>
+        <div class="rem-content">
+          <div class="rem-title">Abertura do dia</div>
+          <div class="rem-sub">Zé manda um resumo do que verificar antes de abrir: estoque, validades, metas.</div>
+          <div class="rem-schedule">
+            <div class="rem-time active" onclick="setRemTime(this,'abertura','07:00')">07:00</div>
+            <div class="rem-time" onclick="setRemTime(this,'abertura','08:00')">08:00</div>
+            <div class="rem-time" onclick="setRemTime(this,'abertura','09:00')">09:00</div>
+          </div>
+        </div>
+        <button class="rem-toggle on" id="rem-abertura" onclick="toggleRem(this,'abertura')"></button>
+      </div>
+
+      <div class="reminder-item">
+        <div class="rem-icon amber">☀️</div>
+        <div class="rem-content">
+          <div class="rem-title">Resultado do almoço</div>
+          <div class="rem-sub">Lembrete para registrar as vendas do período do almoço e verificar sobras.</div>
+          <div class="rem-schedule">
+            <div class="rem-time" onclick="setRemTime(this,'almoco','14:00')">14:00</div>
+            <div class="rem-time active" onclick="setRemTime(this,'almoco','14:30')">14:30</div>
+            <div class="rem-time" onclick="setRemTime(this,'almoco','15:00')">15:00</div>
+          </div>
+        </div>
+        <button class="rem-toggle on" id="rem-almoco" onclick="toggleRem(this,'almoco')"></button>
+      </div>
+
+      <div class="reminder-item">
+        <div class="rem-icon green">🌙</div>
+        <div class="rem-content">
+          <div class="rem-title">Fechamento do caixa</div>
+          <div class="rem-sub">Hora de informar as vendas do dia e ver o resultado. 2 minutos que mudam o mês.</div>
+          <div class="rem-schedule">
+            <div class="rem-time" onclick="setRemTime(this,'fechamento','21:00')">21:00</div>
+            <div class="rem-time active" onclick="setRemTime(this,'fechamento','22:00')">22:00</div>
+            <div class="rem-time" onclick="setRemTime(this,'fechamento','23:00')">23:00</div>
+          </div>
+        </div>
+        <button class="rem-toggle on" id="rem-fechamento" onclick="toggleRem(this,'fechamento')"></button>
+      </div>
+
+      <div class="reminder-item">
+        <div class="rem-icon blue">📦</div>
+        <div class="rem-content">
+          <div class="rem-title">Verificação de validades</div>
+          <div class="rem-sub">Todo dia o Zé verifica o que vai vencer nos próximos 2 dias e avisa antes de perder.</div>
+          <div class="rem-schedule">
+            <div class="rem-time active" onclick="setRemTime(this,'validade','08:00')">08:00</div>
+            <div class="rem-time" onclick="setRemTime(this,'validade','12:00')">12:00</div>
+          </div>
+        </div>
+        <button class="rem-toggle on" id="rem-validade" onclick="toggleRem(this,'validade')"></button>
+      </div>
+
+      <div class="reminder-item">
+        <div class="rem-icon fire">📊</div>
+        <div class="rem-content">
+          <div class="rem-title">Relatório semanal</div>
+          <div class="rem-sub">Toda segunda o Zé manda um resumo da semana: resultado, desperdício, CMV e o que melhorou.</div>
+          <div class="rem-schedule">
+            <div class="rem-time active" onclick="setRemTime(this,'semanal','Segunda 08:00')">Seg 08:00</div>
+            <div class="rem-time" onclick="setRemTime(this,'semanal','Segunda 10:00')">Seg 10:00</div>
+          </div>
+        </div>
+        <button class="rem-toggle" id="rem-semanal" onclick="toggleRem(this,'semanal')"></button>
+      </div>
+
+      <div class="reminder-item">
+        <div class="rem-icon amber">🛒</div>
+        <div class="rem-content">
+          <div class="rem-title">Dia de compras</div>
+          <div class="rem-sub">Zé manda a lista de compras sugerida baseada no histórico de consumo e estoque atual.</div>
+          <div class="rem-schedule">
+            <div class="rem-time" onclick="setRemTime(this,'compras','Terça 07:00')">Ter 07:00</div>
+            <div class="rem-time active" onclick="setRemTime(this,'compras','Quinta 07:00')">Qui 07:00</div>
+          </div>
+        </div>
+        <button class="rem-toggle" id="rem-compras" onclick="toggleRem(this,'compras')"></button>
+      </div>
+
+      <button class="btn-calc" onclick="saveReminders()">Salvar lembretes →</button>
+      <button class="btn-calc" style="margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--text2);"
+        onclick="testPush()">🔔 Testar notificação agora</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM TABS -->
+<div class="bottom-tabs">
+  <div class="tab active" id="tab-home" onclick="goTab('home')">
+    <span class="tab-icon">🏠</span>
+    <span class="tab-label">Início</span>
+  </div>
+  <div class="tab" id="tab-chat" onclick="goTab('chat')">
+    <span class="tab-icon">💬</span>
+    <span class="tab-label">Zé Gestor</span>
+  </div>
+  <div class="tab" id="tab-calc" onclick="goTab('calc')">
+    <span class="tab-icon">🧮</span>
+    <span class="tab-label">Precificar</span>
+  </div>
+  <div class="tab" id="tab-reminders" onclick="goTab('reminders')">
+    <span class="tab-icon">⏰</span>
+    <span class="tab-label">Lembretes</span>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════ STATE ══════════
+let user = JSON.parse(localStorage.getItem('ze_user') || 'null');
+let chatHistory = [];
+let isSending = false;
+let lastCalc = null;
+
+// ══════════ ONBOARDING ══════════
+function startApp() {
+  const nome = document.getElementById('ob-nome').value.trim() || 'amigo';
+  const rest = document.getElementById('ob-rest').value.trim() || 'seu restaurante';
+  const tipo = document.getElementById('ob-tipo').value;
+  const fat = document.getElementById('ob-fat').value;
+  user = { nome, rest, tipo, fat, joined: new Date().toISOString() };
+  localStorage.setItem('ze_user', JSON.stringify(user));
+  document.getElementById('onboarding').style.display = 'none';
+  initApp();
+}
+
+function initApp() {
+  if (!user) return;
+  document.getElementById('nav-rest').textContent = user.rest;
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+  document.getElementById('home-name').textContent = user.nome;
+  document.getElementById('home-sub').textContent = `${greet}! Aqui está o resumo do ${user.rest}.`;
+  initInstall();
+  initPush();
+  updateHomeAlerts();
+  if (chatHistory.length === 0) sendWelcome();
+}
+
+function resetApp() {
+  if (!confirm('Sair e redefinir o app?')) return;
+  localStorage.removeItem('ze_user');
+  location.reload();
+}
+
+// ══════════ TABS ══════════
+function goTab(t) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(x => { x.classList.remove('active'); x.style.display='none'; });
+  document.getElementById('tab-'+t).classList.add('active');
+  const page = document.getElementById('page-'+t);
+  page.style.display = t === 'chat' ? 'flex' : 'block';
+  page.classList.add('active');
+  if (t === 'chat') setTimeout(() => { const c = document.getElementById('chat-messages'); c.scrollTop = c.scrollHeight; }, 50);
+}
+
+// ══════════ INSTALL PWA ══════════
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallBanner();
+});
+
+function showInstallBanner() {
+  const b = document.getElementById('install-banner');
+  b.innerHTML = `<div class="install-prompt">
+    <span class="install-icon">📲</span>
+    <div class="install-text">
+      <div class="install-title">Instalar no celular</div>
+      <div class="install-sub">Acesse como app — sem abrir navegador</div>
+    </div>
+    <button class="install-btn" onclick="installApp()">Instalar</button>
+  </div>`;
+}
+
+function initInstall() {
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (isIOS) {
+    const b = document.getElementById('install-banner');
+    b.innerHTML = `<div class="install-prompt">
+      <span class="install-icon">📲</span>
+      <div class="install-text">
+        <div class="install-title">Instalar no iPhone</div>
+        <div class="install-sub">Toque em <strong>Compartilhar → Adicionar à tela de início</strong></div>
+      </div>
+    </div>`;
+  }
+}
+
+async function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  if (outcome === 'accepted') toast('✓ App instalado!');
+}
+
+// ══════════ PUSH NOTIFICATIONS ══════════
+function initPush() {
+  const perm = Notification.permission;
+  const card = document.getElementById('push-status-content');
+  if (perm === 'granted') {
+    card.innerHTML = `<div class="alert-strip green" style="margin:0"><span>✅</span><span>Notificações ativadas! O Zé vai te avisar na hora certa.</span></div>`;
+    document.getElementById('push-banner').innerHTML = '';
+  } else if (perm === 'denied') {
+    card.innerHTML = `<div class="alert-strip" style="margin:0;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#fca5a5"><span>🔕</span><span>Notificações bloqueadas. Ative nas configurações do navegador.</span></div>`;
+  } else {
+    card.innerHTML = `<div class="alert-strip blue" style="margin:0;cursor:pointer" onclick="requestPush()"><span>🔔</span><span><strong>Ativar notificações push</strong> — o Zé vai te lembrar de registrar vendas, conferir validades e muito mais.</span></div>`;
+    const pb = document.getElementById('push-banner');
+    pb.innerHTML = `<div class="push-prompt">
+      <span>🔔</span>
+      <span>Ativar lembretes automáticos do Zé Gestor</span>
+      <button class="push-btn" onclick="requestPush()">Ativar</button>
+    </div>`;
+  }
+}
+
+async function requestPush() {
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') {
+      await registerSW();
+      toast('✓ Notificações ativadas!');
+      initPush();
+      scheduleReminders();
+    } else {
+      toast('Notificações não autorizadas');
+    }
+  } catch(e) { toast('Erro ao ativar notificações'); }
+}
+
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    await navigator.serviceWorker.register('sw.js');
+  } catch(e) { console.warn('SW:', e); }
+}
+
+function testPush() {
+  if (Notification.permission !== 'granted') {
+    requestPush();
+    return;
+  }
+  new Notification('Zé Gestor 🧑‍🍳', {
+    body: `${user?.nome || 'Oi'}! Não esquece de registrar as vendas de hoje. Só leva 1 minuto!`,
+    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%23ff6b2b"/><text y="48" x="8" font-size="48">🧑‍🍳</text></svg>'
+  });
+  toast('🔔 Notificação enviada!');
+}
+
+function scheduleReminders() {
+  const rems = JSON.parse(localStorage.getItem('ze_reminders') || '{}');
+  if (rems.fechamento !== false) {
+    const now = new Date();
+    const target = new Date(); target.setHours(22,0,0,0);
+    let delay = target - now;
+    if (delay < 0) delay += 86400000;
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.active?.postMessage({
+          type: 'SCHEDULE_REMINDER',
+          delay,
+          title: 'Zé Gestor — Fechamento do caixa 🌙',
+          body: 'Hora de registrar as vendas do dia! Quanto foi hoje?',
+          tag: 'fechamento'
+        });
+      });
+    }
+  }
+}
+
+// ══════════ REMINDERS ══════════
+const remState = JSON.parse(localStorage.getItem('ze_reminders') || '{}');
+
+function toggleRem(btn, key) {
+  btn.classList.toggle('on');
+  remState[key] = btn.classList.contains('on');
+}
+
+function setRemTime(el, key, time) {
+  el.closest('.rem-schedule').querySelectorAll('.rem-time').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  remState[key+'_time'] = time;
+}
+
+function saveReminders() {
+  localStorage.setItem('ze_reminders', JSON.stringify(remState));
+  scheduleReminders();
+  toast('✓ Lembretes salvos!');
+}
+
+// ══════════ HOME ALERTS ══════════
+function updateHomeAlerts() {
+  try {
+    const validades = JSON.parse(localStorage.getItem('rr_validades') || '[]');
+    const urgentes = validades.filter(v => {
+      if (v.resolvido) return false;
+      const dias = Math.round((new Date(v.validade+'T00:00:00') - new Date().setHours(0,0,0,0)) / 86400000);
+      return dias <= (v.antecedencia || 2);
+    });
+    const despSem = JSON.parse(localStorage.getItem('rr_desp') || '[]')
+      .filter(d => new Date(d.data).getTime() > Date.now()-7*86400000)
+      .reduce((s,d) => s+d.total, 0);
+
+    let alerts = '';
+    let alertCount = 0;
+
+    if (urgentes.length > 0) {
+      alertCount += urgentes.length;
+      alerts += `<div class="alert-strip red" onclick="goTab('chat');sendQuick('O que faço com os produtos vencendo?')">
+        <span>⏰</span>
+        <span><strong>${urgentes.length} produto(s)</strong> vencendo nos próximos dias: ${urgentes.slice(0,2).map(v=>v.item).join(', ')}${urgentes.length>2?'...':''}</span>
+      </div>`;
+    }
+    if (despSem > 200) {
+      alertCount++;
+      alerts += `<div class="alert-strip amber" onclick="goTab('chat');sendQuick('Como reduzir meu desperdício?')">
+        <span>🗑️</span>
+        <span>Desperdício de <strong>R$ ${despSem.toFixed(2)}</strong> essa semana — toque para ver como reduzir</span>
+      </div>`;
+    }
+    if (!alerts) {
+      alerts = `<div class="alert-strip green" style="margin:0 16px 12px">
+        <span>✅</span><span>Nenhum alerta crítico hoje. Bom trabalho!</span>
+      </div>`;
+    }
+
+    document.getElementById('home-alerts').innerHTML = alerts;
+    document.getElementById('h-alertas').textContent = alertCount;
+    document.getElementById('h-alertas').className = `mt-val ${alertCount>0?'mt-amber':'mt-green'}`;
+
+    const badge = document.getElementById('notif-badge');
+    if (alertCount > 0) {
+      badge.textContent = alertCount;
+      badge.style.display = 'flex';
+    }
+  } catch(e){}
+}
+
+// ══════════ CHAT ══════════
+function sendWelcome() {
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+  const tipo = {hamburgueria:'hamburgueria',pizzaria:'pizzaria',restaurante:'restaurante',lanchonete:'lanchonete',bar:'bar',delivery:'delivery',cafeteria:'cafeteria'};
+  setTimeout(() => {
+    addBubble('theirs', `${greet}, *${user.nome}*! 👋\n\nEstou aqui pra cuidar da grana da *${user.rest}*.\n\nMe conta o que aconteceu hoje — vendas, compras, problemas — e eu te ajudo a resolver. 💪`, true);
+  }, 300);
+}
+
+function chatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+}
+
+function autoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+}
+
+function sendQuick(text) {
+  goTab('chat');
+  document.getElementById('chat-input').value = text;
+  setTimeout(sendMsg, 100);
+}
+
+function sendCalcToChat() {
+  if (!lastCalc) return toast('Calcule um preço primeiro');
+  goTab('chat');
+  const msg = `Acabei de calcular o preço de um produto:\n- CMV: R$ ${lastCalc.cmv.toFixed(2)}\n- Preço sugerido: R$ ${lastCalc.preco.toFixed(2)}\n- Margem real: ${lastCalc.margem.toFixed(1)}%\nO que você acha? Está bom?`;
+  document.getElementById('chat-input').value = msg;
+  setTimeout(sendMsg, 100);
+}
+
+async function sendMsg() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || isSending) return;
+  input.value = '';
+  input.style.height = 'auto';
+  addBubble('mine', text, true);
+  chatHistory.push({role:'user', content:text});
+  isSending = true;
+  document.getElementById('chat-send').disabled = true;
+  showTyping();
+
+  // Financial context
+  let ctx = '';
+  try {
+    const desp = JSON.parse(localStorage.getItem('rr_desp')||'[]');
+    const comp = JSON.parse(localStorage.getItem('rr_compras')||'[]');
+    const val = JSON.parse(localStorage.getItem('rr_validades')||'[]');
+    const despSem = desp.filter(d=>new Date(d.data).getTime()>Date.now()-7*86400000).reduce((s,d)=>s+d.total,0);
+    const valUrg = val.filter(v=>!v.resolvido&&Math.round((new Date(v.validade+'T00:00:00')-new Date().setHours(0,0,0,0))/86400000)<=(v.antecedencia||2));
+    ctx = `\nDADOS DO SISTEMA:\n- Desperdício essa semana: R$ ${despSem.toFixed(2)}\n- Validades urgentes: ${valUrg.length} (${valUrg.map(v=>v.item).join(', ')||'nenhuma'})\n- Compras registradas: ${comp.length}\n- Faturamento mensal estimado: R$ ${user.fat}`;
+  } catch(e){}
+
+  const sys = `Você é o Zé Gestor, assistente financeiro virtual especializado em restaurantes pequenos e médios do Brasil.
+
+RESTAURANTE: ${user?.rest} (${user?.tipo}) | DONO: ${user?.nome}
+${ctx}
+
+PERSONALIDADE:
+- Fala como um gerente experiente e amigo, não como robô
+- Direto e prático — sem enrolação
+- Use **negrito** para destacar números importantes
+- Emojis com moderação — só quando agrega
+- Máximo 180 palavras por resposta
+- Sempre termina com uma ação concreta ou pergunta
+
+ESPECIALIDADES:
+- Cálculo de resultado: faturamento - CMV - custos fixos rateados - taxas delivery/cartão - imposto = lucro real
+- Precificação: considera CMV, embalagem, taxa do app, imposto e margem desejada
+- Combos: sugere 3 itens, estima custo (~30% do preço), preço de venda e margem
+- Diagnóstico: coleta dados e gera análise dos 6 indicadores principais
+- Dívida com fornecedor: protocolo de renegociação em 3 passos
+
+QUANDO RECEBER DADOS DE VENDA:
+Extraia valores e calcule: resultado bruto, CMV% (se informado), alerta se CMV > 35%
+
+Responda em português brasileiro informal. Seja o gerente que esse dono nunca teve.`;
+
+  try {
+    const msgs = [{role:'system', content:sys}, ...chatHistory.slice(-14)];
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer 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"
+      },
+      body:JSON.stringify({
+        model:"llama-3.3-70b-versatile",
+        max_tokens:1000,
+        messages: msgs
+      })
+    });
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || 'Desculpa, não entendi. Pode repetir?';
+    chatHistory.push({role:'assistant', content:reply});
+    hideTyping();
+    isSending = false;
+    document.getElementById('chat-send').disabled = false;
+
+    // Detect context for action buttons
+    const lower = reply.toLowerCase();
+    let extra = '';
+    if (lower.includes('combo') && lower.includes('r$')) {
+      extra = `<div class="action-btns"><div class="ab" onclick="sendQuick('Gostei! Cria mais um combo diferente')">🔥 Outro combo</div><div class="ab" onclick="sendQuick('Como divulgo esse combo no iFood?')">📱 Divulgar</div></div>`;
+    } else if (lower.includes('diagnóstico') || lower.includes('faturamento')) {
+      extra = `<div class="action-btns"><div class="ab" onclick="sendQuick('Continuar o diagnóstico')">➡️ Continuar</div></div>`;
+    } else if (lower.includes('fornecedor') || lower.includes('dívida')) {
+      extra = `<div class="action-btns"><div class="ab" onclick="sendQuick('Qual o script para ligar pro fornecedor?')">📞 Script de ligação</div></div>`;
+    }
+
+    const fmt = reply.replace(/\*(.*?)\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+    addBubble('theirs', extra ? fmt+extra : fmt, false);
+
+  } catch(e) {
+    hideTyping();
+    isSending = false;
+    document.getElementById('chat-send').disabled = false;
+    addBubble('theirs','⚠️ Erro de conexão. Tenta de novo?', true);
+  }
+}
+
+function addBubble(side, content, isText) {
+  const wrap = document.getElementById('chat-messages');
+  const el = document.createElement('div');
+  el.className = `msg ${side}`;
+  const time = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const fmt = isText ? content.replace(/\*(.*?)\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>') : content;
+  const ticks = side==='mine' ? '<span style="color:#86efac;font-size:13px">✓✓</span>' : '';
+  el.innerHTML = `<div class="bubble">${fmt}<div class="bubble-time">${time} ${ticks}</div></div>`;
+  wrap.appendChild(el);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function showTyping() {
+  const t = document.getElementById('typing');
+  t.classList.add('show');
+  document.getElementById('chat-messages').scrollTop = 99999;
+}
+function hideTyping() { document.getElementById('typing').classList.remove('show'); }
+
+// ══════════ CALCULATOR ══════════
+const canalTax = {
+  salao:0, delivery_proprio:0.05,
+  ifood_basico:0.27, ifood_plus:0.16, rappi:0.20
+};
+
+function rng(el, lblId, sfx) {
+  const pct = (el.value-el.min)/(el.max-el.min)*100;
+  el.style.setProperty('--rp', pct+'%');
+  document.getElementById(lblId).textContent = el.value+sfx;
+  const vid = lblId.replace('-lbl','-v');
+  const v = document.getElementById(vid);
+  if(v) v.textContent = el.value+sfx;
+}
+
+function calcPreco() {
+  const cmv = parseFloat(document.getElementById('c-cmv').value)||0;
+  const emb = parseFloat(document.getElementById('c-emb').value)||0;
+  const imp = parseInt(document.getElementById('c-imp').value)||6;
+  const mg = parseInt(document.getElementById('c-mg').value)||20;
+  const cartPct = parseInt(document.getElementById('c-cart').value)||40;
+  const canal = document.getElementById('c-canal').value;
+  const fixo = parseFloat(document.getElementById('c-fixo').value)||0;
+  const taxaApp = canalTax[canal]||0;
+  const taxaCart = (cartPct/100)*0.025; // média 2.5% cartão
+
+  const custoBase = cmv + emb + fixo;
+  const custoPct = (imp/100) + taxaApp + taxaCart;
+  const preco = custoBase / (1 - custoPct - (mg/100));
+
+  if (preco <= 0 || !isFinite(preco)) return;
+
+  const taxaAppVal = preco * taxaApp;
+  const taxaCartVal = preco * taxaCart;
+  const impVal = preco * (imp/100);
+  const lucro = preco - custoBase - taxaAppVal - taxaCartVal - impVal;
+  const margemReal = (lucro/preco)*100;
+  const cmvPct = (custoBase/preco)*100;
+
+  // Arredondamento psicológico
+  const arred = Math.ceil(preco/5)*5 - 0.01;
+
+  lastCalc = {cmv:custoBase, preco:arred, margem:margemReal};
+
+  const fmt = v => 'R$ '+v.toFixed(2);
+  const pct = v => v.toFixed(1)+'%';
+
+  document.getElementById('res-preco').textContent = fmt(arred);
+  document.getElementById('res-arred').textContent = `Arredondado psicológico: ${fmt(arred)} (vs ${fmt(preco)} calculado)`;
+  document.getElementById('res-cmv-val').textContent = fmt(custoBase);
+  document.getElementById('res-cmv-pct').textContent = pct(cmvPct);
+  document.getElementById('res-cmv-pct').className = cmvPct>40?'tag-bad':cmvPct>35?'tag-warn':'tag-ok';
+  document.getElementById('res-taxa').textContent = fmt(taxaAppVal+taxaCartVal);
+  document.getElementById('res-imp').textContent = fmt(impVal);
+  document.getElementById('res-fixo').textContent = fmt(fixo);
+  document.getElementById('res-lucro').textContent = fmt(lucro);
+  document.getElementById('res-lucro').className = lucro<0?'tag-bad':lucro<preco*0.1?'tag-warn':'tag-ok';
+  document.getElementById('res-margem').textContent = pct(margemReal);
+  document.getElementById('res-margem').className = margemReal<0?'tag-bad':margemReal<10?'tag-warn':'tag-ok';
+
+  // Cenários
+  let cen = '';
+  if (cmvPct > 35) {
+    cen += `<div class="scenario"><span class="scenario-icon">⚠️</span><div class="scenario-text">CMV acima do ideal. Tente <strong>reduzir o custo do ingrediente em 10%</strong> para ganhar mais margem.</div></div>`;
+  }
+  if (canal.includes('ifood_basico')) {
+    const alt = custoBase/(1-(imp/100)-canalTax['ifood_plus']-taxaCart-(mg/100));
+    cen += `<div class="scenario"><span class="scenario-icon">💡</span><div class="scenario-text">No Plano Plus do iFood, o preço poderia ser <strong>${fmt(alt)}</strong> — ${fmt(preco-alt)} mais barato para o cliente e mesma margem sua.</div></div>`;
+  }
+  document.getElementById('res-cenarios').innerHTML = cen;
+  document.getElementById('calc-result').style.display = 'block';
+}
+
+// ══════════ UTILS ══════════
+function toast(msg, dur=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function openNotifPanel() { goTab('reminders'); }
+
+// ══════════ INIT ══════════
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+if (user) {
+  document.getElementById('onboarding').style.display = 'none';
+  initApp();
+}
+// init ranges
+document.querySelectorAll('input[type=range]').forEach(el=>{
+  const p=(el.value-el.min)/(el.max-el.min)*100;
+  el.style.setProperty('--rp',p+'%');
+});
+</script>
+</body>
+</html>
