@@ -438,6 +438,7 @@ input[type=range]::-webkit-slider-thumb{
 .alert-strip.amber{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#fcd34d;}
 .alert-strip.green{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);color:#86efac;}
 .alert-strip.blue{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);color:#93c5fd;}
+.alert-strip.fire{background:rgba(255,107,43,0.12);border:1px solid rgba(255,107,43,0.3);color:var(--text);}
 
 .section-title-row{
   display:flex;justify-content:space-between;align-items:center;
@@ -579,20 +580,81 @@ input[type=range]::-webkit-slider-thumb{
         <div class="ac-title">Fechar o dia</div>
         <div class="ac-sub">ver onde foi o dinheiro</div>
       </div>
-      <div class="action-card" onclick="goTab('chat');sendQuick('Cria um combo lucrativo para mim')">
-        <div class="ac-icon">🔥</div>
-        <div class="ac-title">Criar combo</div>
-        <div class="ac-sub">aumentar ticket</div>
+      <div class="action-card" onclick="abrirRegistrarVenda()">
+        <div class="ac-icon">📊</div>
+        <div class="ac-title">Registrar venda</div>
+        <div class="ac-sub">alimentar o analista</div>
       </div>
       <div class="action-card" onclick="goTab('chat');sendQuick('Faça um diagnóstico financeiro do meu restaurante')">
         <div class="ac-icon">🩺</div>
         <div class="ac-title">Diagnóstico</div>
         <div class="ac-sub">ver situação real</div>
       </div>
-      <div class="action-card" onclick="goTab('reminders')">
-        <div class="ac-icon">⏰</div>
-        <div class="ac-title">Lembretes</div>
-        <div class="ac-sub">push notifications</div>
+      <div class="action-card" onclick="abrirZeAnalista()">
+        <div class="ac-icon">🧠</div>
+        <div class="ac-title">Zé Analista</div>
+        <div class="ac-sub">sugestões inteligentes</div>
+      </div>
+    </div>
+
+    <!-- REGISTRAR VENDA -->
+    <div id="registrar-venda-card" style="display:none;background:var(--s1);border-radius:16px;padding:16px;margin:12px 0;border:1px solid var(--border2);">
+      <div style="font-weight:700;font-size:16px;margin-bottom:4px;">📊 Registrar venda</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:14px;">Cada venda registrada ensina o Zé a conhecer seu negócio. Quanto mais registrar, mais inteligente ele fica.</div>
+
+      <label class="calc-label">Item vendido</label>
+      <input class="calc-input" id="rv-item" placeholder="Ex: X-Bacon, Açaí 500ml, PF completo...">
+
+      <label class="calc-label" style="margin-top:10px;">Quantidade vendida</label>
+      <input class="calc-input" id="rv-qtd" type="number" placeholder="Ex: 5" min="1">
+
+      <label class="calc-label" style="margin-top:10px;">Valor unitário (R$)</label>
+      <div class="pfx-wrap"><span class="pfx">R$</span>
+        <input class="calc-input" id="rv-valor" type="number" placeholder="0,00" step="0.01">
+      </div>
+
+      <label class="calc-label" style="margin-top:10px;">Período do dia</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;" id="rv-periodo-btns">
+        <button class="chip active-chip" id="rvp-manha" onclick="selecionarPeriodo('manha')">🌅 Manhã</button>
+        <button class="chip" id="rvp-almoco" onclick="selecionarPeriodo('almoco')">☀️ Almoço</button>
+        <button class="chip" id="rvp-tarde" onclick="selecionarPeriodo('tarde')">🌤️ Tarde</button>
+        <button class="chip" id="rvp-jantar" onclick="selecionarPeriodo('jantar')">🌙 Jantar</button>
+        <button class="chip" id="rvp-noite" onclick="selecionarPeriodo('noite')">🌃 Noite</button>
+      </div>
+
+      <label class="calc-label" style="margin-top:10px;">Categoria do item</label>
+      <select class="calc-input" id="rv-cat">
+        <option value="lanche">🍔 Lanche / Hambúrguer</option>
+        <option value="acai">🍨 Açaí</option>
+        <option value="pf">🍽️ Prato feito / PF</option>
+        <option value="combo">🔥 Combo</option>
+        <option value="pizza">🍕 Pizza</option>
+        <option value="bebida">🥤 Bebida</option>
+        <option value="sobremesa">🍰 Sobremesa</option>
+        <option value="outro">📌 Outro</option>
+      </select>
+
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button class="btn-calc" style="flex:2;" onclick="salvarVenda()">✅ Registrar</button>
+        <button class="btn-calc" style="flex:1;background:transparent;border:1px solid var(--border);color:var(--text2);" onclick="document.getElementById('registrar-venda-card').style.display='none'">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- ZÉ ANALISTA -->
+    <div id="ze-analista-card" style="display:none;background:var(--s1);border-radius:16px;padding:16px;margin:12px 0;border:1px solid var(--border2);">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:20px;">🧠</span>
+        <div style="font-weight:700;font-size:16px;">Zé Analista</div>
+      </div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:14px;">Baseado no histórico de vendas, o Zé identifica padrões e sugere combos no momento certo.</div>
+      <div id="ze-analista-loading" style="display:none;text-align:center;padding:20px;color:var(--text3);">
+        <div style="font-size:28px;">🔍</div>
+        <div style="font-weight:600;margin-top:6px;">Analisando seu histórico...</div>
+      </div>
+      <div id="ze-analista-conteudo"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn-calc" style="flex:1;" onclick="rodarZeAnalista()">🔄 Analisar agora</button>
+        <button class="btn-calc" style="flex:1;background:transparent;border:1px solid var(--border);color:var(--text2);" onclick="document.getElementById('ze-analista-card').style.display='none'">Fechar</button>
       </div>
     </div>
 
@@ -1189,6 +1251,7 @@ function initApp() {
   initInstall();
   initPush();
   updateHomeAlerts();
+  checarAlertaUber();
   if (chatHistory.length === 0) sendWelcome();
   // Carregar custos fixos salvos
   const cfSaved = JSON.parse(localStorage.getItem('ze_custos_fixos')||'null');
@@ -2241,6 +2304,378 @@ function salvarFechamento() {
 }
 
 // ══════════ DISTRIBUIÇÃO DO DIA ══════════
+
+// ══════════ ZÉ ANALISTA — MOTOR DE INTELIGÊNCIA ══════════
+
+let vendas = JSON.parse(localStorage.getItem('ze_vendas') || '[]');
+let periodoSelecionado = 'almoco';
+
+const periodoHoras = {
+  manha:  { label:'Manhã',  icon:'🌅', inicio: 6,  fim: 11 },
+  almoco: { label:'Almoço', icon:'☀️', inicio: 11, fim: 15 },
+  tarde:  { label:'Tarde',  icon:'🌤️', inicio: 15, fim: 18 },
+  jantar: { label:'Jantar', icon:'🌙', inicio: 18, fim: 21 },
+  noite:  { label:'Noite',  icon:'🌃', inicio: 21, fim: 24 },
+};
+
+const diasSemana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function salvarVendasStorage() {
+  localStorage.setItem('ze_vendas', JSON.stringify(vendas));
+}
+
+function selecionarPeriodo(p) {
+  periodoSelecionado = p;
+  ['manha','almoco','tarde','jantar','noite'].forEach(x => {
+    const el = document.getElementById('rvp-'+x);
+    if (el) { el.classList.toggle('active-chip', x===p); }
+  });
+}
+
+function abrirRegistrarVenda() {
+  const card = document.getElementById('registrar-venda-card');
+  card.style.display = card.style.display==='none' ? 'block' : 'none';
+  if (card.style.display==='block') {
+    // Detectar período automaticamente pela hora atual
+    const h = new Date().getHours();
+    let auto = 'almoco';
+    if (h < 11) auto = 'manha';
+    else if (h < 15) auto = 'almoco';
+    else if (h < 18) auto = 'tarde';
+    else if (h < 21) auto = 'jantar';
+    else auto = 'noite';
+    selecionarPeriodo(auto);
+    card.scrollIntoView({behavior:'smooth'});
+  }
+}
+
+function salvarVenda() {
+  const item  = document.getElementById('rv-item').value.trim();
+  const qtd   = parseInt(document.getElementById('rv-qtd').value)||1;
+  const valor = parseFloat(document.getElementById('rv-valor').value)||0;
+  const cat   = document.getElementById('rv-cat').value;
+  if (!item) { toast('⚠ Informe o item'); return; }
+  if (!valor||valor<=0) { toast('⚠ Informe o valor'); return; }
+
+  const agora = new Date();
+  vendas.push({
+    id: Date.now(),
+    item, qtd, valor, cat,
+    periodo: periodoSelecionado,
+    diaSemana: agora.getDay(),        // 0=Dom … 6=Sáb
+    hora: agora.getHours(),
+    data: agora.toISOString().split('T')[0],
+    criadoEm: agora.toISOString()
+  });
+  salvarVendasStorage();
+  document.getElementById('rv-item').value  = '';
+  document.getElementById('rv-qtd').value   = '';
+  document.getElementById('rv-valor').value = '';
+  document.getElementById('registrar-venda-card').style.display = 'none';
+  toast(`✅ Venda registrada! (${vendas.length} no histórico)`);
+  // Verificar se IA deve gerar alerta proativo
+  checarAlertaUber();
+}
+
+// ─── MOTOR DE PADRÃO ──────────────────────────────────────────────
+function analisarPadroes() {
+  if (vendas.length === 0) return null;
+
+  // 1. Agregar por item+período+diaSemana
+  const mapa = {};
+  vendas.forEach(v => {
+    const chave = `${v.item}||${v.periodo}||${v.diaSemana}`;
+    if (!mapa[chave]) mapa[chave] = { item:v.item, cat:v.cat, periodo:v.periodo, diaSemana:v.diaSemana, totalQtd:0, totalReceita:0, ocorrencias:0, valores:[] };
+    mapa[chave].totalQtd     += v.qtd;
+    mapa[chave].totalReceita += v.qtd * v.valor;
+    mapa[chave].ocorrencias  += 1;
+    mapa[chave].valores.push(v.valor);
+  });
+
+  // 2. Calcular médias e scores
+  const registros = Object.values(mapa).map(r => ({
+    ...r,
+    mediaValor:  r.totalReceita / r.totalQtd,
+    mediaQtdDia: r.totalQtd / Math.max(r.ocorrencias, 1),
+    score: r.totalQtd * r.ocorrencias   // quanto mais frequente e volumoso, maior o score
+  }));
+
+  // 3. Top itens por categoria
+  const topGeral = [...registros].sort((a,b) => b.score - a.score).slice(0,10);
+
+  // 4. Padrões por dia da semana
+  const porDia = {};
+  registros.forEach(r => {
+    if (!porDia[r.diaSemana]) porDia[r.diaSemana] = [];
+    porDia[r.diaSemana].push(r);
+  });
+
+  // 5. Padrões por período
+  const porPeriodo = {};
+  registros.forEach(r => {
+    if (!porPeriodo[r.periodo]) porPeriodo[r.periodo] = [];
+    porPeriodo[r.periodo].push(r);
+  });
+
+  // 6. Itens que vendem pouco (candidatos a combo)
+  const baixoGiro = [...registros].filter(r => r.mediaQtdDia < 2 && r.ocorrencias >= 2)
+                                  .sort((a,b) => a.score - b.score).slice(0,5);
+
+  return { topGeral, porDia, porPeriodo, baixoGiro, total: vendas.length };
+}
+
+// ─── GERADOR DE COMBOS INTELIGENTES ───────────────────────────────
+function gerarCombosInteligentes(padroes) {
+  if (!padroes) return [];
+  const combos = [];
+  const agora   = new Date();
+  const diaAtual = agora.getDay();
+  const h        = agora.getHours();
+  let periodoAtual = 'almoco';
+  if (h < 11) periodoAtual = 'manha';
+  else if (h < 15) periodoAtual = 'almoco';
+  else if (h < 18) periodoAtual = 'tarde';
+  else if (h < 21) periodoAtual = 'jantar';
+  else periodoAtual = 'noite';
+
+  const fixos = JSON.parse(localStorage.getItem('ze_custos_fixos')||'null');
+  const cmvPadrao = 0.35;
+
+  // COMBO 1: Hoje neste período costuma vender bem — reforçar
+  const topHoje = (padroes.porDia[diaAtual]||[])
+    .filter(r => r.periodo === periodoAtual)
+    .sort((a,b) => b.score - a.score)[0];
+  if (topHoje) {
+    const desconto = 0.08; // 8% de desconto
+    const precoCombo = topHoje.mediaValor * (1 - desconto);
+    const custoEst   = topHoje.mediaValor * cmvPadrao;
+    const margem     = ((precoCombo - custoEst) / precoCombo * 100).toFixed(0);
+    combos.push({
+      tipo: 'pico',
+      icone: '🔥',
+      titulo: `Combo pico de ${periodoHoras[periodoAtual]?.label||periodoAtual}`,
+      descricao: `Todo ${diasSemana[diaAtual]} neste horário, <strong>${topHoje.item}</strong> vende bem. Ative um combo com 8% de desconto para turbinar ainda mais.`,
+      item: topHoje.item,
+      precoOriginal: topHoje.mediaValor,
+      precoCombo: precoCombo,
+      margem,
+      acao: `Ativar combo ${topHoje.item} por R$ ${precoCombo.toLocaleString('pt-BR',{minimumFractionDigits:2})}`
+    });
+  }
+
+  // COMBO 2: Item de baixo giro — empurrar com combo
+  if (padroes.baixoGiro.length > 0) {
+    const lento  = padroes.baixoGiro[0];
+    const rapido = padroes.topGeral[0];
+    if (rapido && lento.item !== rapido.item) {
+      const precoCombo = (rapido.mediaValor + lento.mediaValor) * 0.88;
+      const custoEst   = precoCombo * cmvPadrao;
+      const margem     = ((precoCombo - custoEst) / precoCombo * 100).toFixed(0);
+      combos.push({
+        tipo: 'giro',
+        icone: '♻️',
+        titulo: 'Combo giro de estoque',
+        descricao: `<strong>${lento.item}</strong> está vendendo pouco. Combine com <strong>${rapido.item}</strong> (seu campeão) com 12% de desconto no total — você gira o estoque sem perder margem.`,
+        item: `${rapido.item} + ${lento.item}`,
+        precoOriginal: rapido.mediaValor + lento.mediaValor,
+        precoCombo: precoCombo,
+        margem,
+        acao: `Montar combo ${rapido.item} + ${lento.item}`
+      });
+    }
+  }
+
+  // COMBO 3: Fim de dia / meta
+  const fechamentos = JSON.parse(localStorage.getItem('ze_fechamentos')||'[]');
+  const hoje = agora.toISOString().split('T')[0];
+  const fechHoje = fechamentos.find(f => f.data === hoje);
+  if (h >= 19 && padroes.topGeral[0]) {
+    const top = padroes.topGeral[0];
+    const precoCombo = top.mediaValor * 0.90;
+    const custoEst   = precoCombo * cmvPadrao;
+    const margem     = ((precoCombo - custoEst) / precoCombo * 100).toFixed(0);
+    combos.push({
+      tipo: 'fimdia',
+      icone: '🌙',
+      titulo: 'Combo fechamento',
+      descricao: `São ${h}h. Última hora para bater a meta. <strong>${top.item}</strong> é seu item mais vendido — ofereça 10% de desconto por tempo limitado para fechar o dia no verde.`,
+      item: top.item,
+      precoOriginal: top.mediaValor,
+      precoCombo: precoCombo,
+      margem,
+      acao: `Ativar promoção relâmpago ${top.item}`
+    });
+  }
+
+  return combos;
+}
+
+// ─── RENDERIZAR ZÉ ANALISTA ───────────────────────────────────────
+function abrirZeAnalista() {
+  const card = document.getElementById('ze-analista-card');
+  card.style.display = 'block';
+  card.scrollIntoView({behavior:'smooth'});
+  rodarZeAnalista();
+}
+
+async function rodarZeAnalista() {
+  const conteudo = document.getElementById('ze-analista-conteudo');
+  const loading  = document.getElementById('ze-analista-loading');
+  conteudo.innerHTML = '';
+  loading.style.display = 'block';
+
+  const padroes = analisarPadroes();
+
+  if (!padroes || padroes.total < 3) {
+    loading.style.display = 'none';
+    conteudo.innerHTML = `
+      <div style="text-align:center;padding:20px;color:var(--text3);">
+        <div style="font-size:36px;">📊</div>
+        <div style="font-weight:700;margin:8px 0 4px;">Zé ainda está aprendendo</div>
+        <div style="font-size:13px;">Registre pelo menos 3 vendas para o Zé começar a identificar padrões.</div>
+        <div style="margin-top:12px;font-size:13px;color:var(--fire);font-weight:600;">Você tem ${padroes?.total||0} venda(s) registrada(s).</div>
+        <button class="btn-calc" style="margin-top:14px;width:100%;" onclick="abrirRegistrarVenda()">📊 Registrar venda agora</button>
+      </div>`;
+    return;
+  }
+
+  // Pedir ao Zé Gestor (IA) para interpretar os padrões
+  const agora = new Date();
+  const diasSemAtual = diasSemana[agora.getDay()];
+  const horaAtual = agora.getHours();
+  const resumoPadroes = padroes.topGeral.slice(0,5).map(r =>
+    `${r.item} (${r.totalQtd} vendidos, ${diasSemana[r.diaSemana]} no ${r.periodo}, média R$${r.mediaValor.toFixed(2)})`
+  ).join('; ');
+  const resumoBaixoGiro = padroes.baixoGiro.map(r => r.item).join(', ') || 'nenhum';
+
+  let analiseIA = '';
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer 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' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 350,
+        messages: [{
+          role: 'system',
+          content: 'Você é o Zé Gestor, analista financeiro de restaurantes brasileiro. Fale de forma direta, simples e como um parceiro de negócios. Sem termos técnicos.'
+        },{
+          role: 'user',
+          content: `Hoje é ${diasSemAtual}, ${horaAtual}h. Analise estes padrões de vendas do restaurante:
+TOP ITENS: ${resumoPadroes}
+BAIXO GIRO: ${resumoBaixoGiro}
+Total de vendas no histórico: ${padroes.total}
+
+Em 2-3 frases curtas, diga: 1) qual o padrão mais importante que você viu, 2) uma ação concreta para hoje. Seja direto como um parceiro de negócios.`
+        }]
+      })
+    });
+    const d = await resp.json();
+    if (d.choices?.[0]) analiseIA = d.choices[0].message.content;
+  } catch(e) { analiseIA = ''; }
+
+  const combos = gerarCombosInteligentes(padroes);
+  loading.style.display = 'none';
+
+  // Renderizar
+  let html = '';
+
+  // Painel resumo
+  html += `<div style="background:rgba(255,107,43,0.08);border-radius:12px;padding:14px;margin-bottom:14px;border-left:3px solid var(--fire);">
+    <div style="font-size:11px;font-weight:700;color:var(--fire);margin-bottom:6px;">🧠 ANÁLISE DO ZÉ</div>
+    <div style="font-size:14px;line-height:1.6;">${analiseIA || 'Padrões identificados com base no seu histórico.'}</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:6px;">Baseado em ${padroes.total} vendas registradas</div>
+  </div>`;
+
+  // Top itens
+  if (padroes.topGeral.length > 0) {
+    html += `<div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.4px;margin-bottom:8px;">🏆 SEUS CAMPEÕES DE VENDA</div>
+      ${padroes.topGeral.slice(0,4).map((r,i) => `
+        <div style="background:var(--s2);border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:700;font-size:13px;">${['🥇','🥈','🥉','4️⃣'][i]} ${r.item}</div>
+            <div style="font-size:11px;color:var(--text3);">${diasSemana[r.diaSemana]} · ${periodoHoras[r.periodo]?.icon||''} ${periodoHoras[r.periodo]?.label||r.periodo}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:800;color:var(--fire);">${r.totalQtd} un.</div>
+            <div style="font-size:11px;color:var(--text3);">R$ ${r.mediaValor.toFixed(2)}/un</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  // Combos sugeridos
+  if (combos.length > 0) {
+    html += `<div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.4px;margin-bottom:8px;">🔥 COMBOS SUGERIDOS PARA AGORA</div>`;
+    combos.forEach(c => {
+      const economia = c.precoOriginal - c.precoCombo;
+      html += `
+        <div style="background:var(--s1);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border2);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+            <div style="font-weight:700;font-size:14px;">${c.icone} ${c.titulo}</div>
+            <div style="background:rgba(34,197,94,0.15);color:var(--green);font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;">margem ${c.margem}%</div>
+          </div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;">${c.descricao}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;background:var(--s2);border-radius:8px;padding:8px 12px;margin-bottom:10px;">
+            <div>
+              <div style="font-size:11px;color:var(--text3);">De</div>
+              <div style="font-size:13px;text-decoration:line-through;color:var(--text3);">R$ ${c.precoOriginal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
+            </div>
+            <div style="font-size:20px;color:var(--text3);">→</div>
+            <div>
+              <div style="font-size:11px;color:var(--green);">Por</div>
+              <div style="font-size:20px;font-weight:800;color:var(--fire);">R$ ${c.precoCombo.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text3);">Cliente economiza</div>
+              <div style="font-size:14px;font-weight:700;color:var(--green);">R$ ${economia.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
+            </div>
+          </div>
+          <button class="btn-calc" style="width:100%;font-size:13px;" onclick="ativarComboUber('${c.item}', ${c.precoCombo.toFixed(2)}, '${c.tipo}')">
+            ⚡ ${c.acao}
+          </button>
+        </div>`;
+    });
+  }
+
+  // Baixo giro alerta
+  if (padroes.baixoGiro.length > 0) {
+    html += `<div style="background:rgba(245,158,11,0.08);border-radius:12px;padding:12px 14px;border:1px solid rgba(245,158,11,0.2);margin-top:4px;">
+      <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:6px;">⚠️ ATENÇÃO: BAIXO GIRO</div>
+      <div style="font-size:13px;">Estes itens estão vendendo pouco: <strong>${padroes.baixoGiro.map(r=>r.item).join(', ')}</strong></div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px;">Considere incluí-los em combos ou revisar o preço.</div>
+    </div>`;
+  }
+
+  conteudo.innerHTML = html;
+}
+
+function ativarComboUber(item, preco, tipo) {
+  const msg = `Ativar combo: ${item} por R$ ${preco.toLocaleString('pt-BR',{minimumFractionDigits:2})}. Tipo: ${tipo}. Me ajuda a comunicar esse combo para os clientes agora?`;
+  document.getElementById('ze-analista-card').style.display = 'none';
+  goTab('chat');
+  sendQuick(msg);
+}
+
+function checarAlertaUber() {
+  const padroes = analisarPadroes();
+  if (!padroes || padroes.total < 5) return;
+  const combos = gerarCombosInteligentes(padroes);
+  if (combos.length > 0) {
+    const c = combos[0];
+    const alertas = document.getElementById('home-alerts');
+    if (alertas && !document.getElementById('alerta-uber')) {
+      const div = document.createElement('div');
+      div.id = 'alerta-uber';
+      div.className = 'alert-strip fire';
+      div.style.cursor = 'pointer';
+      div.onclick = abrirZeAnalista;
+      div.innerHTML = `${c.icone} <strong>Zé Analista:</strong> ${c.titulo} disponível — R$ ${c.precoCombo.toLocaleString('pt-BR',{minimumFractionDigits:2})} com ${c.margem}% de margem. Toque para ver.`;
+      alertas.prepend(div);
+    }
+  }
+}
 
 // ══════════ UTILS ══════════
 function toast(msg, dur=2500) {
