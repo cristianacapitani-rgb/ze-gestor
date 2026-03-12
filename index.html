@@ -848,8 +848,56 @@ input[type=range]::-webkit-slider-thumb{
         <div id="bl-ok-saldo" style="margin-top:12px;display:none;background:rgba(34,197,94,0.1);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--green);line-height:1.4;"></div>
       </div>
 
-      <!-- BOTÃO NOVO BOLETO -->
-      <button class="btn-calc" style="width:100%;margin-bottom:16px;" onclick="abrirFormBoleto()">+ Adicionar boleto / conta</button>
+      <!-- BOTÕES DE ENTRADA -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <button class="btn-calc" style="flex:2;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="abrirFotosBoleto()">
+          📸 <span>Tirar foto do boleto</span>
+        </button>
+        <button class="btn-calc" style="flex:1;background:transparent;border:1px solid var(--border);color:var(--text2);" onclick="abrirFormBoleto()">
+          ✏️ Manual
+        </button>
+      </div>
+
+      <!-- AREA DE FOTO DO BOLETO -->
+      <div id="foto-boleto-area" style="display:none;background:var(--s1);border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid var(--border2);">
+        <div style="font-weight:700;margin-bottom:8px;font-size:15px;">📸 Foto do boleto</div>
+        <div style="font-size:13px;color:var(--text3);margin-bottom:12px;">Tire uma foto ou selecione o boleto, carnê, nota ou conta. O Zé extrai tudo automaticamente.</div>
+        
+        <!-- Preview da foto -->
+        <div id="boleto-preview-container" style="display:none;margin-bottom:12px;">
+          <img id="boleto-preview-img" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover;">
+        </div>
+
+        <!-- Loading -->
+        <div id="boleto-lendo" style="display:none;text-align:center;padding:20px;color:var(--text3);">
+          <div style="font-size:28px;margin-bottom:8px;">🔍</div>
+          <div style="font-weight:600;">Zé lendo o boleto...</div>
+          <div style="font-size:12px;margin-top:4px;">Identificando valor, vencimento e descrição</div>
+        </div>
+
+        <!-- Resultado -->
+        <div id="boleto-resultado" style="display:none;background:rgba(34,197,94,0.08);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid rgba(34,197,94,0.2);">
+          <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px;">✅ ZÉ IDENTIFICOU:</div>
+          <div id="boleto-resultado-texto" style="font-size:14px;line-height:1.6;color:var(--text);"></div>
+        </div>
+
+        <!-- Erro -->
+        <div id="boleto-erro" style="display:none;background:rgba(239,68,68,0.08);border-radius:12px;padding:12px;margin-bottom:12px;color:var(--red);font-size:13px;"></div>
+
+        <input type="file" id="boleto-foto-input" accept="image/*" capture="environment" style="display:none;" onchange="processarFotoBoleto(this)">
+        
+        <div style="display:flex;gap:8px;">
+          <button class="btn-calc" style="flex:1;" onclick="document.getElementById('boleto-foto-input').click()">
+            📷 Escolher foto
+          </button>
+          <button id="btn-confirmar-boleto" class="btn-calc" style="flex:1;display:none;background:var(--green);" onclick="confirmarBoletoDaFoto()">
+            ✓ Confirmar
+          </button>
+          <button class="btn-calc" style="flex:1;background:transparent;border:1px solid var(--border);color:var(--text2);" onclick="fecharFotosBoleto()">
+            Cancelar
+          </button>
+        </div>
+      </div>
 
       <!-- FORM NOVO BOLETO (hidden) -->
       <div id="form-boleto" style="display:none;background:var(--s1);border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid var(--border2);">
@@ -1122,6 +1170,115 @@ let editandoBoleto = null;
 
 function salvarBoletosStorage() {
   localStorage.setItem('ze_boletos', JSON.stringify(boletos));
+}
+
+let boletoDaFotoData = null;
+
+function abrirFotosBoleto() {
+  document.getElementById('foto-boleto-area').style.display = 'block';
+  document.getElementById('form-boleto').style.display = 'none';
+  document.getElementById('boleto-resultado').style.display = 'none';
+  document.getElementById('boleto-erro').style.display = 'none';
+  document.getElementById('boleto-preview-container').style.display = 'none';
+  document.getElementById('btn-confirmar-boleto').style.display = 'none';
+  document.getElementById('boleto-lendo').style.display = 'none';
+  boletoDaFotoData = null;
+  document.getElementById('foto-boleto-area').scrollIntoView({ behavior:'smooth' });
+}
+
+function fecharFotosBoleto() {
+  document.getElementById('foto-boleto-area').style.display = 'none';
+  boletoDaFotoData = null;
+}
+
+async function processarFotoBoleto(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+
+  // Preview
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    document.getElementById('boleto-preview-img').src = e.target.result;
+    document.getElementById('boleto-preview-container').style.display = 'block';
+    document.getElementById('boleto-resultado').style.display = 'none';
+    document.getElementById('boleto-erro').style.display = 'none';
+    document.getElementById('btn-confirmar-boleto').style.display = 'none';
+    document.getElementById('boleto-lendo').style.display = 'block';
+
+    const base64 = e.target.result.split(',')[1];
+    const mediaType = file.type || 'image/jpeg';
+
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer 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' },
+        body: JSON.stringify({
+          model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+          max_tokens: 500,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image_url', image_url: { url: `data:${mediaType};base64,${base64}` } },
+              { type: 'text', text: `Você é o Zé Gestor, assistente de restaurantes. Analise esta imagem de boleto, conta, nota fiscal ou carnê e extraia APENAS estas informações em JSON válido, sem markdown:
+{"desc":"descrição curta do que é (ex: Aluguel, Conta de Luz, Fornecedor X, Empréstimo)","valor":0.00,"venc":"YYYY-MM-DD","cat":"aluguel|energia|fornecedor|folha|ifood|emprestimo|outro","confianca":"alta|media|baixa"}
+Se não conseguir identificar algum campo, use null. Responda SOMENTE o JSON.` }
+            ]
+          }]
+        })
+      });
+      const data = await response.json();
+      document.getElementById('boleto-lendo').style.display = 'none';
+
+      if (data.choices && data.choices[0]) {
+        let texto = data.choices[0].message.content.trim();
+        texto = texto.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(texto);
+        boletoDaFotoData = parsed;
+
+        const dataFmt = parsed.venc ? new Date(parsed.venc + 'T00:00:00').toLocaleDateString('pt-BR') : 'Não identificado';
+        const valorFmt = parsed.valor ? `R$ ${parseFloat(parsed.valor).toLocaleString('pt-BR', {minimumFractionDigits:2})}` : 'Não identificado';
+        
+        document.getElementById('boleto-resultado-texto').innerHTML = `
+          <div style="margin-bottom:4px;">📌 <strong>Descrição:</strong> ${parsed.desc || 'Não identificado'}</div>
+          <div style="margin-bottom:4px;">💰 <strong>Valor:</strong> ${valorFmt}</div>
+          <div style="margin-bottom:4px;">📅 <strong>Vencimento:</strong> ${dataFmt}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;">Confiança: ${parsed.confianca || '—'} ${parsed.confianca === 'alta' ? '✅' : parsed.confianca === 'media' ? '⚠️' : '❓'}</div>
+        `;
+        document.getElementById('boleto-resultado').style.display = 'block';
+        document.getElementById('btn-confirmar-boleto').style.display = 'block';
+      }
+    } catch(err) {
+      document.getElementById('boleto-lendo').style.display = 'none';
+      document.getElementById('boleto-erro').style.display = 'block';
+      document.getElementById('boleto-erro').textContent = '⚠️ Não consegui ler o boleto. Tente uma foto mais nítida ou preencha manualmente.';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function confirmarBoletoDaFoto() {
+  if (!boletoDaFotoData) return;
+  const d = boletoDaFotoData;
+  // Campos com fallback para hoje + 7 dias se não identificou
+  const hoje = new Date(); hoje.setDate(hoje.getDate() + 7);
+  const vencFallback = hoje.toISOString().split('T')[0];
+  boletos.push({
+    id: Date.now(),
+    desc: d.desc || 'Boleto',
+    valor: parseFloat(d.valor) || 0,
+    venc: d.venc || vencFallback,
+    cat: d.cat || 'outro',
+    recorr: 'unica',
+    pago: false,
+    criadoEm: new Date().toISOString()
+  });
+  salvarBoletosStorage();
+  fecharFotosBoleto();
+  renderBoletos();
+  atualizarResumoBoletos();
+  updateHomeAlerts();
+  toast('✅ Boleto cadastrado pela foto!');
+  boletoDaFotoData = null;
 }
 
 function abrirFormBoleto(id) {
@@ -1626,4 +1783,3 @@ document.querySelectorAll('input[type=range]').forEach(el=>{
 </script>
 </body>
 </html>
-
