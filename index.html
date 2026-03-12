@@ -645,6 +645,15 @@ input[type=range]::-webkit-slider-thumb{
             <input type="number" id="c-emb" placeholder="0,00" min="0" step="0.01" oninput="calcPreco()">
           </div>
         </div>
+        <div class="field">
+          <label>% de desperdício estimado <span id="c-desp-lbl" style="color:var(--amber)">5%</span>
+            <span style="font-size:11px;color:var(--text3);display:block;margin-top:2px;">Inclui perdas na produção, sobras e erros de preparo</span>
+          </label>
+          <div class="rng-row">
+            <input type="range" id="c-desp" min="0" max="30" value="5" oninput="rng(this,'c-desp-lbl','%');calcPreco()">
+            <span class="rng-val" id="c-desp-v">5%</span>
+          </div>
+        </div>
       </div>
 
       <div class="card">
@@ -679,15 +688,62 @@ input[type=range]::-webkit-slider-thumb{
       <div class="card">
         <div class="card-label">Passo 3</div>
         <h3>Custos fixos + lucro</h3>
-        <div class="field">
-          <label>Rateio de custos fixos por produto</label>
-          <div class="pfx-wrap"><span class="pfx">R$</span>
-            <input type="number" id="c-fixo" placeholder="Ex: 2,50" min="0" step="0.01" oninput="calcPreco()">
+
+        <!-- CUSTOS FIXOS DISCRIMINADOS -->
+        <div style="background:var(--s2);border-radius:12px;padding:14px;margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:10px;letter-spacing:.4px;">CUSTOS FIXOS MENSAIS</div>
+          <div style="display:grid;gap:8px;">
+            <div class="field" style="margin:0;">
+              <label style="font-size:12px;">🏠 Aluguel</label>
+              <div class="pfx-wrap"><span class="pfx">R$</span>
+                <input type="number" id="cf-aluguel" placeholder="0,00" min="0" step="0.01" oninput="calcCustosFixos()">
+              </div>
+            </div>
+            <div class="field" style="margin:0;">
+              <label style="font-size:12px;">⚡ Energia / Água / Gás</label>
+              <div class="pfx-wrap"><span class="pfx">R$</span>
+                <input type="number" id="cf-energia" placeholder="0,00" min="0" step="0.01" oninput="calcCustosFixos()">
+              </div>
+            </div>
+            <div class="field" style="margin:0;">
+              <label style="font-size:12px;">👷 Folha de pagamento</label>
+              <div class="pfx-wrap"><span class="pfx">R$</span>
+                <input type="number" id="cf-folha" placeholder="0,00" min="0" step="0.01" oninput="calcCustosFixos()">
+              </div>
+            </div>
+            <div class="field" style="margin:0;">
+              <label style="font-size:12px;">🏦 Empréstimo / Financiamento</label>
+              <div class="pfx-wrap"><span class="pfx">R$</span>
+                <input type="number" id="cf-emprestimo" placeholder="0,00" min="0" step="0.01" oninput="calcCustosFixos()">
+              </div>
+            </div>
+            <div class="field" style="margin:0;">
+              <label style="font-size:12px;">📌 Outros fixos</label>
+              <div class="pfx-wrap"><span class="pfx">R$</span>
+                <input type="number" id="cf-outros" placeholder="0,00" min="0" step="0.01" oninput="calcCustosFixos()">
+              </div>
+            </div>
           </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:5px;font-family:var(--mono);">
-            Dica: total fixos mensal ÷ pedidos/mês
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;font-weight:700;color:var(--text2);">Total fixos/mês</span>
+            <span style="font-size:18px;font-weight:800;color:var(--fire);" id="cf-total-mes">R$ 0,00</span>
           </div>
         </div>
+
+        <!-- PEDIDOS E RATEIO -->
+        <div class="field">
+          <label>Pedidos por mês (para rateio)
+            <span style="font-size:11px;color:var(--text3);display:block;">Total fixos ÷ pedidos = custo por unidade</span>
+          </label>
+          <div class="pfx-wrap"><span class="pfx">#</span>
+            <input type="number" id="c-pedidos" placeholder="Ex: 790" min="1" step="1" value="790" oninput="calcCustosFixos()">
+          </div>
+          <div style="margin-top:8px;background:rgba(255,107,43,0.08);border-radius:8px;padding:8px 12px;font-size:13px;display:flex;justify-content:space-between;">
+            <span style="color:var(--text3);">Custo fixo por produto:</span>
+            <span style="font-weight:800;color:var(--fire);" id="cf-por-unidade">R$ 0,00</span>
+          </div>
+        </div>
+
         <div class="field">
           <label>Margem de lucro desejada <span id="c-mg-lbl" style="color:var(--fire)">20%</span></label>
           <div class="rng-row">
@@ -706,6 +762,7 @@ input[type=range]::-webkit-slider-thumb{
         </div>
         <div class="result-rows">
           <div class="result-row"><span>CMV + embalagem</span><span id="res-cmv-val">R$ 0,00</span></div>
+          <div class="result-row"><span>% desperdício incluído</span><span id="res-desp-val" style="color:var(--amber)">R$ 0,00</span></div>
           <div class="result-row"><span>CMV % do preço</span><span id="res-cmv-pct" class="tag-ok">0%</span></div>
           <div class="result-row"><span>Taxa delivery/cartão</span><span id="res-taxa">R$ 0,00</span></div>
           <div class="result-row"><span>Imposto</span><span id="res-imp">R$ 0,00</span></div>
@@ -1006,6 +1063,22 @@ function initApp() {
   initPush();
   updateHomeAlerts();
   if (chatHistory.length === 0) sendWelcome();
+  // Carregar custos fixos salvos
+  const cfSaved = JSON.parse(localStorage.getItem('ze_custos_fixos')||'null');
+  if (cfSaved) {
+    const ids = ['aluguel','energia','folha','emprestimo','outros'];
+    ids.forEach(id => {
+      const el = document.getElementById('cf-'+id);
+      if (el && cfSaved[id]) el.value = cfSaved[id];
+    });
+    const pelEl = document.getElementById('c-pedidos');
+    if (pelEl && cfSaved.pedidos) pelEl.value = cfSaved.pedidos;
+    const fmt = v => 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2});
+    const tm = document.getElementById('cf-total-mes');
+    const pu = document.getElementById('cf-por-unidade');
+    if (tm) tm.textContent = fmt(cfSaved.total||0);
+    if (pu) pu.textContent = fmt(cfSaved.porUnidade||0);
+  }
 }
 
 function resetApp() {
@@ -1699,18 +1772,45 @@ function rng(el, lblId, sfx) {
   if(v) v.textContent = el.value+sfx;
 }
 
+function calcCustosFixos() {
+  const aluguel = parseFloat(document.getElementById('cf-aluguel').value)||0;
+  const energia = parseFloat(document.getElementById('cf-energia').value)||0;
+  const folha = parseFloat(document.getElementById('cf-folha').value)||0;
+  const emprestimo = parseFloat(document.getElementById('cf-emprestimo').value)||0;
+  const outros = parseFloat(document.getElementById('cf-outros').value)||0;
+  const total = aluguel + energia + folha + emprestimo + outros;
+  const pedidos = parseInt(document.getElementById('c-pedidos').value)||790;
+  const porUnidade = pedidos > 0 ? total/pedidos : 0;
+  const fmt = v => 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  document.getElementById('cf-total-mes').textContent = fmt(total);
+  document.getElementById('cf-por-unidade').textContent = fmt(porUnidade);
+  // Salvar nos dados do usuário
+  const fixos = {aluguel,energia,folha,emprestimo,outros,total,pedidos,porUnidade};
+  localStorage.setItem('ze_custos_fixos', JSON.stringify(fixos));
+  calcPreco();
+}
+
+function getCustoFixoPorUnidade() {
+  const saved = JSON.parse(localStorage.getItem('ze_custos_fixos')||'null');
+  if (saved) return saved.porUnidade || 0;
+  return 0;
+}
+
 function calcPreco() {
   const cmv = parseFloat(document.getElementById('c-cmv').value)||0;
   const emb = parseFloat(document.getElementById('c-emb').value)||0;
+  const despPct = parseInt(document.getElementById('c-desp')?.value)||5;
   const imp = parseInt(document.getElementById('c-imp').value)||6;
   const mg = parseInt(document.getElementById('c-mg').value)||20;
   const cartPct = parseInt(document.getElementById('c-cart').value)||40;
   const canal = document.getElementById('c-canal').value;
-  const fixo = parseFloat(document.getElementById('c-fixo').value)||0;
+  const fixo = getCustoFixoPorUnidade();
   const taxaApp = canalTax[canal]||0;
-  const taxaCart = (cartPct/100)*0.025; // média 2.5% cartão
+  const taxaCart = (cartPct/100)*0.025;
 
-  const custoBase = cmv + emb + fixo;
+  // Desperdício incide sobre CMV + embalagem
+  const despVal = (cmv + emb) * (despPct/100);
+  const custoBase = cmv + emb + despVal + fixo;
   const custoPct = (imp/100) + taxaApp + taxaCart;
   const preco = custoBase / (1 - custoPct - (mg/100));
 
@@ -1723,17 +1823,16 @@ function calcPreco() {
   const margemReal = (lucro/preco)*100;
   const cmvPct = (custoBase/preco)*100;
 
-  // Arredondamento psicológico
   const arred = Math.ceil(preco/5)*5 - 0.01;
-
   lastCalc = {cmv:custoBase, preco:arred, margem:margemReal};
 
-  const fmt = v => 'R$ '+v.toFixed(2);
+  const fmt = v => 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2});
   const pct = v => v.toFixed(1)+'%';
 
   document.getElementById('res-preco').textContent = fmt(arred);
   document.getElementById('res-arred').textContent = `Arredondado psicológico: ${fmt(arred)} (vs ${fmt(preco)} calculado)`;
-  document.getElementById('res-cmv-val').textContent = fmt(custoBase);
+  document.getElementById('res-cmv-val').textContent = fmt(cmv+emb);
+  document.getElementById('res-desp-val').textContent = `+${fmt(despVal)} (${despPct}% desperdício)`;
   document.getElementById('res-cmv-pct').textContent = pct(cmvPct);
   document.getElementById('res-cmv-pct').className = cmvPct>40?'tag-bad':cmvPct>35?'tag-warn':'tag-ok';
   document.getElementById('res-taxa').textContent = fmt(taxaAppVal+taxaCartVal);
@@ -1744,8 +1843,10 @@ function calcPreco() {
   document.getElementById('res-margem').textContent = pct(margemReal);
   document.getElementById('res-margem').className = margemReal<0?'tag-bad':margemReal<10?'tag-warn':'tag-ok';
 
-  // Cenários
   let cen = '';
+  if (despPct > 10) {
+    cen += `<div class="scenario"><span class="scenario-icon">🗑️</span><div class="scenario-text">Seu desperdício de <strong>${despPct}%</strong> está alto. Reduzir para 5% economiza <strong>${fmt((cmv+emb)*((despPct-5)/100))}</strong> por prato.</div></div>`;
+  }
   if (cmvPct > 35) {
     cen += `<div class="scenario"><span class="scenario-icon">⚠️</span><div class="scenario-text">CMV acima do ideal. Tente <strong>reduzir o custo do ingrediente em 10%</strong> para ganhar mais margem.</div></div>`;
   }
@@ -1755,6 +1856,20 @@ function calcPreco() {
   }
   document.getElementById('res-cenarios').innerHTML = cen;
   document.getElementById('calc-result').style.display = 'block';
+}
+
+// ══════════ DISTRIBUIÇÃO DO DIA ══════════
+function calcDistribuicaoDia(vendas) {
+  const fixos = JSON.parse(localStorage.getItem('ze_custos_fixos')||'null');
+  const diasMes = 26; // dias úteis
+  const fixosDia = fixos ? fixos.total/diasMes : 0;
+  const cmvPct = 0.35; // 35% padrão se não tiver dado real
+  const cmvDia = vendas * cmvPct;
+  const sobra = vendas - cmvDia - fixosDia;
+  const retirada = Math.max(0, sobra * 0.40);
+  const reserva = Math.max(0, sobra * 0.20);
+  const reinvestimento = Math.max(0, sobra * 0.40);
+  return { vendas, cmvDia, fixosDia, sobra, retirada, reserva, reinvestimento };
 }
 
 // ══════════ UTILS ══════════
